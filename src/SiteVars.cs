@@ -22,6 +22,7 @@ namespace Landis.Extension.Scrapple
         private static ISiteVar<double> clay;
         private static ISiteVar<ISiteCohorts> cohorts;
         private static ISiteVar<double> fineFuels;
+        private static ISiteVar<double> ladderFuels;
         private static ISiteVar<Pool> tempFineFuels;
         private static ISiteVar<int> specialDeadWood;  // potential snags, specifically
         private static ISiteVar<int> biomassKilled;
@@ -169,6 +170,18 @@ namespace Landis.Extension.Scrapple
             set
             {
                 fineFuels = value;
+            }
+        }
+        //---------------------------------------------------------------------
+        public static ISiteVar<double> LadderFuels
+        {
+            get
+            {
+                return ladderFuels;
+            }
+            set
+            {
+                ladderFuels = value;
             }
         }
         //---------------------------------------------------------------------
