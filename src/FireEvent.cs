@@ -288,7 +288,7 @@ namespace Landis.Extension.Scrapple
             }
 
             // LADDER FUELS ************************
-            double ladderFuelBiomass = SiteVars.LadderFuels[site];
+            int ladderFuelBiomass = SiteVars.LadderFuels[site];
 
             
             // End LADDER FUELS ************************

@@ -193,6 +193,8 @@ namespace Landis.Extension.Scrapple
                         }
                     }
                 }
+
+                if (SiteVars.LadderFuels[site] > Parameters.MaxLadderFuels) SiteVars.LadderFuels[site] = Parameters.MaxLadderFuels;
             }
 
             foreach (IDynamicIgnitionMap dynamicRxIgnitions in dynamicRxIgns)

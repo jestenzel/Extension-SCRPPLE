@@ -22,7 +22,7 @@ namespace Landis.Extension.Scrapple
         private static ISiteVar<double> clay;
         private static ISiteVar<ISiteCohorts> cohorts;
         private static ISiteVar<double> fineFuels;
-        private static ISiteVar<double> ladderFuels;
+        private static ISiteVar<int> ladderFuels;
         private static ISiteVar<Pool> tempFineFuels;
         private static ISiteVar<int> specialDeadWood;  // potential snags, specifically
         private static ISiteVar<int> biomassKilled;
@@ -101,6 +101,12 @@ namespace Landis.Extension.Scrapple
                     SiteVars.FineFuels[site] = SiteVars.tempFineFuels[site].Mass;
             }
 
+
+            LadderFuels = PlugIn.ModelCore.Landscape.NewSiteVar<int>();
+
+            foreach (ActiveSite site in PlugIn.ModelCore.Landscape)
+                SiteVars.LadderFuels[site] = 0;
+
         }
 
         //---------------------------------------------------------------------
@@ -173,7 +179,7 @@ namespace Landis.Extension.Scrapple
             }
         }
         //---------------------------------------------------------------------
-        public static ISiteVar<double> LadderFuels
+        public static ISiteVar<int> LadderFuels
         {
             get
             {

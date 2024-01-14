@@ -314,6 +314,10 @@ namespace Landis.Extension.Scrapple
             ReadVar(maxFF);
             parameters.MaxFineFuels = maxFF.Value;
 
+            InputVar<int> maxLF = new InputVar<int>("MaximumLadderFuels");
+            ReadVar(maxLF);
+            parameters.MaxLadderFuels = maxLF.Value;
+
             InputVar<double> maxRxWS = new InputVar<double>("MaximumRxWindSpeed");
             ReadVar(maxRxWS);
             parameters.RxMaxWindSpeed = maxRxWS.Value;
