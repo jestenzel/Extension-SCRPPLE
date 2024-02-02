@@ -61,6 +61,7 @@ namespace Landis.Extension.Scrapple
         double SpreadProbabilityB2 { get; set; }
         double SpreadProbabilityB3 { get; set; }
 
+        string SiteMortalityLink { get; set; }
         double SiteMortalityB0 { get; set; }
         double SiteMortalityB1 { get; set; }
         double SiteMortalityB2 { get; set; }
@@ -145,6 +146,7 @@ namespace Landis.Extension.Scrapple
         private double spreadProbabilityB2;
         private double spreadProbabilityB3;
 
+        private string siteMortalityLink;
         private double siteMortalityB0;
         private double siteMortalityB1;
         private double siteMortalityB2;
@@ -685,6 +687,12 @@ namespace Landis.Extension.Scrapple
             }
         }
         //---------------------------------------------------------------------
+        public string SiteMortalityLink
+        {
+            get { return siteMortalityLink;}
+            set { siteMortalityLink = value;}
+        }
+//---------------------------------------------------------------------
         public double SiteMortalityB0
         {
             get { return siteMortalityB0;}

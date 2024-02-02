@@ -404,6 +404,10 @@ namespace Landis.Extension.Scrapple
             ReadVar(sp3);
             parameters.SpreadProbabilityB3 = sp3.Value;
 
+            InputVar<string> mortLink = new InputVar<string>("SiteMortalityLink");
+            ReadVar(mortLink);
+            parameters.SiteMortalityLink = mortLink.Value;
+
             InputVar<double> sm0 = new InputVar<double>("SiteMortalityB0");
             ReadVar(sm0);
             parameters.SiteMortalityB0 = sm0.Value;

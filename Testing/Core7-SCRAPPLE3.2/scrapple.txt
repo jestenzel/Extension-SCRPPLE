@@ -70,6 +70,7 @@ SiteMortalityB3 -0.0002200  << The parameter fit for site level Effective Windsp
 SiteMortalityB4  -0.00000050 << The parameter fit for site level Climatic Water Deficit (PET-AET). 
 SiteMortalityB5 0.00000  << The parameter fit for fine fuels (a percentage of the maximum, from above). 
 SiteMortalityB6 0.00000  << The parameter fit for ladder fuels. 
+SiteMortalityB6 0.00000  << The parameter fit for FWI 
 
 CohortMortalityB0 -0.703 << Intercept
 CohortMortalityB1 -0.9908 << The parameter fit for the relationship between bark thickness and cohort mortality.
