@@ -345,7 +345,7 @@ namespace Landis.Extension.Scrapple
             if (PlugIn.Parameters.SiteMortalityLink == "identity")
             {
 
-                siteMortality = Math.Min((intercept + (Clay * Beta_Clay)
+                siteMortality = Math.Min((intercept + (Clay * Beta_Clay) //For Gaussian error distribution
                     + (Previous_Year_PET * Beta_ET)
                     + (siteEffectiveWindSpeed * Beta_Windspeed)
                     + (WaterDeficit * Beta_Water_Deficit)
@@ -353,7 +353,7 @@ namespace Landis.Extension.Scrapple
                     + (fineFuelPercent * Beta_Fuel)
                     + (siteFireWeatherIndex * Beta_FWI)), 2000);
             }
-            else if (PlugIn.Parameters.SiteMortalityLink == "inverse")
+            else if (PlugIn.Parameters.SiteMortalityLink == "inverse") //Inverse link is the canonical link for Gamma error distribution
             { 
                 siteMortality = Math.Pow(Math.Max((intercept + (Clay * Beta_Clay)
                     + (Previous_Year_PET * Beta_ET)
@@ -363,9 +363,19 @@ namespace Landis.Extension.Scrapple
                     + (fineFuelPercent * Beta_Fuel)
                     + (siteFireWeatherIndex * Beta_FWI)), .0005), -1.0);
             }
+            else if (PlugIn.Parameters.SiteMortalityLink == "log") //Log-link, could be used with Gaussian or Gamma error distribution
+            {
+                siteMortality = Math.Min(Math.Pow(Math.E, intercept + (Clay * Beta_Clay)
+                    + (Previous_Year_PET * Beta_ET)
+                    + (siteEffectiveWindSpeed * Beta_Windspeed)
+                    + (WaterDeficit * Beta_Water_Deficit)
+                    + (ladderFuelBiomass * Beta_LadderFuels)
+                    + (fineFuelPercent * Beta_Fuel)
+                    + (siteFireWeatherIndex * Beta_FWI)), 2000);
+            }
             else
             {
-                throw new ApplicationException("SiteMortalityLink must be \"identity\" or \"inverse\"");
+                throw new ApplicationException("SiteMortalityLink must be \"identity\", \"log\", or \"inverse\"");
             }
             siteMortality = Math.Max(siteMortality, 0.0);  // In the long-run, this shouldn't be necessary.  But useful for testing.
 
