@@ -34,6 +34,7 @@ namespace Landis.Extension.Scrapple
         double AccidentalFireIgnitionBinomialB1 { get; set; }
         double MaxFineFuels { get; set; }
         int MaxLadderFuels { get; set; }
+        int CanMinFireIntensity { get; set; }
         List<IDynamicIgnitionMap> DynamicRxIgnitionMaps { get; }
         List<IDynamicIgnitionMap> DynamicLightningIgnitionMaps { get; }
         List<IDynamicIgnitionMap> DynamicAccidentalIgnitionMaps { get; }
@@ -123,6 +124,7 @@ namespace Landis.Extension.Scrapple
         private double accidentalFireIgnitionBinomialB1;
         private double maxFineFuels;
         private int maxLadderFuels;
+        private int canMinFireIntensity;
 
         private double maxRxWindSpeed;
         private double maxRxFireWeatherIndex;
@@ -455,6 +457,18 @@ namespace Landis.Extension.Scrapple
             set
             {
                 maxLadderFuels = value;
+            }
+        }
+        //---------------------------------------------------------------------
+        public int CanMinFireIntensity
+        {
+            get
+            {
+                return canMinFireIntensity;
+            }
+            set
+            {
+                canMinFireIntensity = value;
             }
         }
         //---------------------------------------------------------------------

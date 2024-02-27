@@ -53,7 +53,7 @@ namespace Landis.Extension.Scrapple
                 parameters.TimeZeroPET = 0.0;
 
             InputVar<double> tzcwd = new InputVar<double>("TimeZeroCWD");
-            if (ReadOptionalVar(tzcwd)) 
+            if (ReadOptionalVar(tzcwd))
                 parameters.TimeZeroCWD = tzcwd.Value;
             else
                 parameters.TimeZeroCWD = 0.0;
@@ -317,6 +317,10 @@ namespace Landis.Extension.Scrapple
             InputVar<int> maxLF = new InputVar<int>("MaximumLadderFuels");
             ReadVar(maxLF);
             parameters.MaxLadderFuels = maxLF.Value;
+
+            InputVar<int> minCFI = new InputVar<int>("MinumumCanFireIntensity");
+            ReadVar(minCFI);
+            parameters.CanMinFireIntensity = minCFI.Value;
 
             InputVar<double> maxRxWS = new InputVar<double>("MaximumRxWindSpeed");
             ReadVar(maxRxWS);
@@ -614,7 +618,7 @@ namespace Landis.Extension.Scrapple
             //}
 
             //ReadName(FireIntensityClass_3_DamageTable);
-            //while (!AtEndOfInput) // && CurrentName != LadderFuelSpeciesList) 
+            //while (!AtEndOfInput) // && CurrentName != LadderFuelSpeciesList)
             //{
 
             //    StringReader currentLine = new StringReader(CurrentLine);
@@ -656,7 +660,7 @@ namespace Landis.Extension.Scrapple
             //    PlugIn.ModelCore.UI.WriteLine("      {0} : {1} : {2}", damage.DamageSpecies.Name, damage.MaxAge, damage.ProbablityMortality);
 
 
-            return parameters; 
+            return parameters;
         }
         //---------------------------------------------------------------------
 

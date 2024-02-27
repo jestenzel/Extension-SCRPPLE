@@ -41,6 +41,9 @@ namespace Landis.Extension.Scrapple
         public static ISiteVar<double> PotentialEvapotranspiration;
         public static ISiteVar<int> DNBR;
 
+        private static ISiteVar<bool> crownFire;
+        private static ISiteVar<int> treeFuels;
+
         //---------------------------------------------------------------------
 
         public static void Initialize()
@@ -74,6 +77,8 @@ namespace Landis.Extension.Scrapple
             EventID = PlugIn.ModelCore.Landscape.NewSiteVar<int>();
             RxZones = PlugIn.ModelCore.Landscape.NewSiteVar<int>();
 
+            crownFire = PlugIn.ModelCore.Landscape.NewSiteVar<bool>();
+
             SmolderConsumption = PlugIn.ModelCore.GetSiteVar<double>("Succession.SmolderConsumption");
             FlamingConsumption = PlugIn.ModelCore.GetSiteVar<double>("Succession.FlamingConsumption");
             ClimaticWaterDeficit = PlugIn.ModelCore.GetSiteVar<double>("Succession.CWD");
@@ -103,9 +108,14 @@ namespace Landis.Extension.Scrapple
 
 
             LadderFuels = PlugIn.ModelCore.Landscape.NewSiteVar<int>();
+            TreeFuels = PlugIn.ModelCore.Landscape.NewSiteVar<int>(); //JS
 
             foreach (ActiveSite site in PlugIn.ModelCore.Landscape)
-                SiteVars.LadderFuels[site] = 0;
+            {
+               SiteVars.LadderFuels[site] = 0;
+               SiteVars.TreeFuels[site] = 0; //JS
+            }
+
 
         }
 
@@ -242,7 +252,7 @@ namespace Landis.Extension.Scrapple
             }
         }
         //---------------------------------------------------------------------
-        
+
         public static ISiteVar<ushort> GroundSlope
         {
             get {
@@ -309,6 +319,27 @@ namespace Landis.Extension.Scrapple
                 return cohorts;
             }
         }
+        //---------------------------------------------------------------------
+        public static ISiteVar<bool> CrownFire
+        {
+            get
+            {
+                return crownFire;
+            }
+        }
 
+        //---------------------------------------------------------------------
+        public static ISiteVar<int> TreeFuels //JS
+        {
+            get
+            {
+                return treeFuels;
+            }
+            set
+            {
+                treeFuels = value;
+            }
+        }
+        ////---------------------------------------------------------------------
     }
 }

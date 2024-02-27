@@ -5,7 +5,7 @@ using Landis.Library.Climate;
 using Landis.Core;
 using Landis.Library.Metadata;
 using Landis.Library.BiomassCohorts;
-using Ether.WeightedSelector;  
+using Ether.WeightedSelector;
 
 using System;
 using System.Collections.Generic;
@@ -18,18 +18,18 @@ namespace Landis.Extension.Scrapple
     /// A disturbance plug-in that simulates Fire disturbance.
     /// </summary>
     public class PlugIn
-        : ExtensionMain 
+        : ExtensionMain
     {
-        private static readonly bool isDebugEnabled = true; 
+        private static readonly bool isDebugEnabled = true;
 
         public static readonly ExtensionType ExtType = new ExtensionType("disturbance:fire");
         public static readonly string ExtensionName = "SCRAPPLE";
         public static MetadataTable<EventsLog> eventLog;
         public static MetadataTable<SummaryLog> summaryLog;
         public static MetadataTable<IgnitionsLog> ignitionsLog;
-        
-        // Get the active sites from the landscape and shuffle them 
-        public List<ActiveSite> activeRxSites; 
+
+        // Get the active sites from the landscape and shuffle them
+        public List<ActiveSite> activeRxSites;
         public List<ActiveSite> activeAccidentalSites;
         public List<ActiveSite> activeLightningSites;
         public double rxTotalWeight;
@@ -85,7 +85,7 @@ namespace Landis.Extension.Scrapple
                 return modelCore;
             }
         }
-        
+
         //---------------------------------------------------------------------
 
         public override void LoadParameters(string dataFile,
@@ -105,7 +105,7 @@ namespace Landis.Extension.Scrapple
 
 
             ///******************** DEBUGGER LAUNCH *********************
-            /// 
+            ///
             /*
             if (Debugger.Launch())
             {
@@ -117,7 +117,7 @@ namespace Landis.Extension.Scrapple
                 Debugger.Break();
             }
             else
-            { 
+            {
                 modelCore.UI.WriteLine("Debugger not attached");
             }
             */
@@ -180,6 +180,7 @@ namespace Landis.Extension.Scrapple
             SiteVars.SpecialDeadWood.ActiveSiteValues = 0;
             SiteVars.BiomassKilled.ActiveSiteValues = 0;
             SiteVars.EventID.ActiveSiteValues = 0;
+            SiteVars.CrownFire.ActiveSiteValues = false;
 
             foreach (ActiveSite site in PlugIn.ModelCore.Landscape)
             {
@@ -191,10 +192,17 @@ namespace Landis.Extension.Scrapple
                         {
                             SiteVars.LadderFuels[site] += cohort.Biomass;
                         }
+
+                        SiteVars.TreeFuels[site] += cohort.Biomass;  //[JS] For now, consider all tree biomass a fuels. This could be changed to add a portion of the cohort's biomass.
                     }
                 }
 
-                if (SiteVars.LadderFuels[site] > Parameters.MaxLadderFuels) SiteVars.LadderFuels[site] = Parameters.MaxLadderFuels;
+                if (SiteVars.LadderFuels[site] > Parameters.MaxLadderFuels)
+                {
+                   SiteVars.LadderFuels[site] = Parameters.MaxLadderFuels;
+                   SiteVars.TreeFuels[site] = Parameters.MaxLadderFuels; // The maximum tree fuels effect is limited to the maximum ladder fuels effect for now.
+                }
+
             }
 
             foreach (IDynamicIgnitionMap dynamicRxIgnitions in dynamicRxIgns)
@@ -268,7 +276,7 @@ namespace Landis.Extension.Scrapple
             }
 
             // modelCore.UI.WriteLine("   Next, shuffle ignition sites...");
-            // Get the active sites from the landscape and shuffle them 
+            // Get the active sites from the landscape and shuffle them
             // Sites are weighted for ignition in the Ether.WeightedSelector Shuffle method, based on the respective inputs maps.
             int numSites = 0;
             weightedRxSites = PreShuffleEther(SiteVars.RxFireWeight, out numSites);
@@ -342,8 +350,8 @@ namespace Landis.Extension.Scrapple
                     }
                 }
 
-             
-                
+
+
                 //PlugIn.ModelCore.UI.WriteLine("   Generating accidental fires...");
                 if (numAccidentalSites > 0)
                 {
@@ -767,20 +775,20 @@ namespace Landis.Extension.Scrapple
             {
                 //Draw from a poisson distribution  with lambda equal to the log link (b0 +b0 *fireweather )
                 double possibleIgnitions = ModelCore.PoissonDistribution.Lambda = Math.Pow(Math.E, (b0 + (b1 * fireWeatherIndex)));
-               // Because the Core Poisson Distribution Lambda returns the population mean we transform it to the whole number + the probability of the remainder to get 
-               // a integer as the response. 
+               // Because the Core Poisson Distribution Lambda returns the population mean we transform it to the whole number + the probability of the remainder to get
+               // a integer as the response.
                // Whole Number
                 int floorPossibleIginitions = (int)Math.Floor(possibleIgnitions);
                 numIgnitions += floorPossibleIginitions;
-                // Remainder 
+                // Remainder
                 numIgnitions += (modelCore.GenerateUniform() <= (possibleIgnitions - (double)floorPossibleIginitions) ? 1 : 0);
                 //modelCore.UI.WriteLine("   Processing landscape for Fire events.  Possible={0}, Rounded={1}", possibleIgnitions, numIgnitions);
             } else
             {
-                // Zero Inflated: Requires two additional variables 
+                // Zero Inflated: Requires two additional variables
                 double binomb0 = 0.0;
                 double binomb1 = 0.0;
-                
+
                 if (ignitionType == IgnitionType.Lightning)
                 {
                     binomb0 = Parameters.LightningIgnitionBinomialB0;
@@ -791,24 +799,24 @@ namespace Landis.Extension.Scrapple
                     binomb0 = Parameters.AccidentalFireIgnitionBinomialB0;
                     binomb1 = Parameters.AccidentalFireIgnitionBinomialB1;
                 }
-                /// The Binomial portion of the draw: 
-                /// Probability of a zero is caculated then a random draw is checked agianst this 
-                /// If greater than the probability of zero the Poisson section is used. 
+                /// The Binomial portion of the draw:
+                /// Probability of a zero is caculated then a random draw is checked agianst this
+                /// If greater than the probability of zero the Poisson section is used.
                 double BinomDraw = modelCore.NextDouble();
                 /// alpha= reverse logit link of the regression values and FWI
                 double alpha = Math.Pow(Math.E, (binomb0 + (binomb1 * fireWeatherIndex)));
                 double zerosprob = alpha / (alpha + 1);
                 if (BinomDraw >= zerosprob)
                 {
-                    /// If yes the mean of possion draw with reverse log link of regression variables. 
+                    /// If yes the mean of possion draw with reverse log link of regression variables.
                     double  possibleIgnitions=ModelCore.PoissonDistribution.Lambda = Math.Pow(Math.E, (b0 + (b1 * fireWeatherIndex)));
-                    ///Because the the Core Poisson Distribution Lambda returns the population mean we transform it to the whole number + the probability of the remainder to get 
-                    /// a integer as the response. 
-                    /// 
+                    ///Because the the Core Poisson Distribution Lambda returns the population mean we transform it to the whole number + the probability of the remainder to get
+                    /// a integer as the response.
+                    ///
                     /// Whole Number
                     int floorPossibleIginitions = (int)Math.Floor(possibleIgnitions);
                     numIgnitions += floorPossibleIginitions;
-                    /// Remainder 
+                    /// Remainder
                     numIgnitions += (modelCore.GenerateUniform() <= (possibleIgnitions - (double)floorPossibleIginitions) ? 1 : 0);
                 }
                 else
@@ -874,7 +882,7 @@ namespace Landis.Extension.Scrapple
         // Sites are weighted for ignition in the Shuffle method, based on the respective inputs maps.
         private static List<ActiveSite> PreShuffle(ISiteVar<double> weightedSiteVar, out double totalWeight)
         {
-            List<ActiveSite> list = new List<ActiveSite>(); 
+            List<ActiveSite> list = new List<ActiveSite>();
             foreach (ActiveSite site in PlugIn.ModelCore.Landscape.ActiveSites)
                 if (weightedSiteVar[site] > 0.0)
                     list.Add(site);
@@ -917,7 +925,7 @@ namespace Landis.Extension.Scrapple
                 randomNum = FireEvent.rnd.Next(list.Count);
             }
 
-            //check to make sure it is 
+            //check to make sure it is
             foreach (ActiveSite site in list)
             {
                 if (randomNum < weightedSiteVar[site])
@@ -929,7 +937,7 @@ namespace Landis.Extension.Scrapple
                 randomNum -= (int)weightedSiteVar[site];
             }
 
-            return selectedSite; // when iterations end, selected is some element of sequence. 
+            return selectedSite; // when iterations end, selected is some element of sequence.
         }
         //---------------------------------------------------------------------
 

@@ -156,7 +156,7 @@ namespace Landis.Extension.Scrapple
             fireSites.Add(initialSites);
 
             // desitination and source are the same for ignition site
-            fireEvent.Spread(PlugIn.ModelCore.CurrentTime, day); 
+            fireEvent.Spread(PlugIn.ModelCore.CurrentTime, day);
 
             LogEvent(PlugIn.ModelCore.CurrentTime, fireEvent, PlugIn.EventID);
 
@@ -203,7 +203,7 @@ namespace Landis.Extension.Scrapple
                     return;
 
                 // DAY OF FIRE *****************************
-                //      Calculate spread-area-max 
+                //      Calculate spread-area-max
                 if (this.IgnitionType == IgnitionType.Rx)
                 {
                     if ((this.TotalSitesBurned * PlugIn.ModelCore.CellArea) > PlugIn.Parameters.RxTargetSize)
@@ -288,19 +288,27 @@ namespace Landis.Extension.Scrapple
             }
 
             // LADDER FUELS ************************
+
             int ladderFuelBiomass = SiteVars.LadderFuels[site];
+
+            if( SiteVars.CrownFire[site] ) //JS
+            {
+               ladderFuelBiomass = SiteVars.TreeFuels[site];
+            }
+
+
 
 
             // End LADDER FUELS ************************
 
             // dNBR / DRdNBR calculation SITE scale
-            // New mortality sub model for Scrpple used to model site level mortality to site level variables 
+            // New mortality sub model for Scrpple used to model site level mortality to site level variables
             // (Clay%, ET, Windspeed, Water Deficit, and Fuel)
             // The function for the site level mortality is generalized linear model utilizing a gamma distribution with an inverse link.
 
             IEcoregion ecoregion = PlugIn.ModelCore.Ecoregion[site];
 
-            // Establish the variables 
+            // Establish the variables
             double Clay = SiteVars.Clay[site];
             //double Previous_Year_ET = 0.0;
             //try
@@ -330,11 +338,11 @@ namespace Landis.Extension.Scrapple
 
             //double TotalFuels = SiteVars.FineFuels[site] + ladderFuelBiomass;
 
-            /// For delayed relative delta normalized burn ratio (DRdNBR) calculation 
-            double intercept = PlugIn.Parameters.SiteMortalityB0; //The parameter fit for the intercept 
+            /// For delayed relative delta normalized burn ratio (DRdNBR) calculation
+            double intercept = PlugIn.Parameters.SiteMortalityB0; //The parameter fit for the intercept
             double Beta_Clay = PlugIn.Parameters.SiteMortalityB1; //The parameter fit for site level clay % in Soil.
             double Beta_ET = PlugIn.Parameters.SiteMortalityB2; //The parameter fit for site level previous years annual ET
-            double Beta_Windspeed = PlugIn.Parameters.SiteMortalityB3;// The parameter fit for site level Effective Windspeed 
+            double Beta_Windspeed = PlugIn.Parameters.SiteMortalityB3;// The parameter fit for site level Effective Windspeed
             double Beta_Water_Deficit = PlugIn.Parameters.SiteMortalityB4;//The parameter fit for site level PET-AET
             double Beta_Fuel = PlugIn.Parameters.SiteMortalityB5; //The parameter fit for site level fuels, here combining fine fuels and ladder fuels
             double Beta_LadderFuels = PlugIn.Parameters.SiteMortalityB6;
@@ -354,7 +362,7 @@ namespace Landis.Extension.Scrapple
                     + (siteFireWeatherIndex * Beta_FWI)), 2000);
             }
             else if (PlugIn.Parameters.SiteMortalityLink == "inverse") //Inverse link is the canonical link for Gamma error distribution
-            { 
+            {
                 siteMortality = Math.Pow(Math.Max((intercept + (Clay * Beta_Clay)
                     + (Previous_Year_PET * Beta_ET)
                     + (siteEffectiveWindSpeed * Beta_Windspeed)
@@ -396,6 +404,15 @@ namespace Landis.Extension.Scrapple
                 this.SiteMortality = standardSeverityIndex * 100;
             }
 
+            if( SiteVars.Intensity[site] >= PlugIn.Parameters.CanMinFireIntensity) //JS Crown fire that has "spread" to a target site can fail.
+            {
+               SiteVars.CrownFire[site] = true;
+            }
+            else
+            {
+               SiteVars.CrownFire[site] = false;
+            }
+
             SiteVars.DNBR[site] = this.SiteMortality;
             SiteVars.TypeOfIginition[site] = (int)this.IgnitionType;
             //PlugIn.ModelCore.UI.WriteLine("  dNBR: {0}, severity={1}.", siteMortality, standardSeverityIndex);
@@ -414,11 +431,11 @@ namespace Landis.Extension.Scrapple
             SiteVars.EventID[site] = PlugIn.EventID;
 
         }
-        
+
         //---------------------------------------------------------------------
         //  A filter to determine which cohorts are removed.
-        //  Use species level variables for bark thickness accumulation with age to calculate cohort level mortality. 
-        // the cohort level mortality is a binomial distribution  
+        //  Use species level variables for bark thickness accumulation with age to calculate cohort level mortality.
+        // the cohort level mortality is a binomial distribution
 
         int IDisturbance.ReduceOrKillMarkedCohort(ICohort cohort)
         {
@@ -427,21 +444,21 @@ namespace Landis.Extension.Scrapple
             bool killCohort = false;
 
             // User Inputs
-            double Beta_naught_m = PlugIn.Parameters.CohortMortalityB0; // Intercept parameter for mortality curve 
-            double Beta_Bark = PlugIn.Parameters.CohortMortalityB1; // The parameter fit for the relationship between bark thickness and mortality. 
-            double Beta_Site_Mortality = PlugIn.Parameters.CohortMortalityB2; // The parameter fit for the relationship between site level and individual level mortality. 
+            double Beta_naught_m = PlugIn.Parameters.CohortMortalityB0; // Intercept parameter for mortality curve
+            double Beta_Bark = PlugIn.Parameters.CohortMortalityB1; // The parameter fit for the relationship between bark thickness and mortality.
+            double Beta_Site_Mortality = PlugIn.Parameters.CohortMortalityB2; // The parameter fit for the relationship between site level and individual level mortality.
 
-            // From the input file each species will need 
-            // AgeDBH _Parameter is a parameter to scale Age and DBH estimated from a function in the form of 
-            // It is essentially the half-life of the MaxBarkThickness *Age relationship. 
-            // This is a logistic survival code with the MaxBarkThickness being asymptote. 
+            // From the input file each species will need
+            // AgeDBH _Parameter is a parameter to scale Age and DBH estimated from a function in the form of
+            // It is essentially the half-life of the MaxBarkThickness *Age relationship.
+            // This is a logistic survival code with the MaxBarkThickness being asymptote.
             // As age increase DBH approaches MaxBarkThickness
             double AgeDBH = SpeciesData.AgeDBH[cohort.Species];
 
-            // The maximum measured Bark thickness. The asymptote of the logistic survival curve. 
-            // This was calculated by using a species-specific bark DBH Coefficient described in Cansler 2020 and the maximum measured DBH form FIA. 
-            //  Cansler, C. A., Hood, S. M., Varner, J. M., van Mantgem, P. J., Agne, M. C., Andrus, R. A., ... & 
-            //  Bentz, B. J. (2020). The Fire and Tree Mortality Database, for empirical modeling of individual tree 
+            // The maximum measured Bark thickness. The asymptote of the logistic survival curve.
+            // This was calculated by using a species-specific bark DBH Coefficient described in Cansler 2020 and the maximum measured DBH form FIA.
+            //  Cansler, C. A., Hood, S. M., Varner, J. M., van Mantgem, P. J., Agne, M. C., Andrus, R. A., ... &
+            //  Bentz, B. J. (2020). The Fire and Tree Mortality Database, for empirical modeling of individual tree
             //  mortality after fire. Scientific data, 7(1), 1-14.
             double MaxBarkThickness = SpeciesData.MaximumBarkThickness[cohort.Species];
 
@@ -520,6 +537,8 @@ namespace Landis.Extension.Scrapple
                         ladderFuelBiomass += cohort.Biomass;
             // End LADDER FUELS ************************
 
+            double treeFuelProp = 0.0;
+            treeFuelProp = Math.Min( (double)SiteVars.TreeFuels[site] / (double)PlugIn.Parameters.MaxLadderFuels, 1.0);
 
      // SUPPRESSION ************************
             double suppressEffect = 1.0; // 1.0 = no effect
@@ -529,7 +548,7 @@ namespace Landis.Extension.Scrapple
 
             if (this.IgnitionType == IgnitionType.Accidental)
             {
-                index = SiteVars.AccidentalSuppressionIndex[site] + ((int)this.IgnitionType * 10);  
+                index = SiteVars.AccidentalSuppressionIndex[site] + ((int)this.IgnitionType * 10);
             }
             if (this.IgnitionType == IgnitionType.Lightning)
             {
@@ -538,7 +557,7 @@ namespace Landis.Extension.Scrapple
             if (this.IgnitionType == IgnitionType.Rx)
             {
                 index = SiteVars.RxSuppressionIndex[site] + ((int)this.IgnitionType * 10);
-            }  
+            }
             try
             {
                 fwi1 = PlugIn.Parameters.SuppressionFWI_Table[index].FWI_Break1;
@@ -550,7 +569,7 @@ namespace Landis.Extension.Scrapple
                     suppressEffect = 1.0 - ((double)PlugIn.Parameters.SuppressionFWI_Table[index].Suppression1 / 100.0);
                 else if (fireWeatherIndex >= fwi2)
                     suppressEffect = 1.0 - ((double)PlugIn.Parameters.SuppressionFWI_Table[index].Suppression2 / 100.0);
-            } 
+            }
             catch
             {
                 PlugIn.ModelCore.UI.WriteLine("NOTE: No table entry for Suppression MapCode {0}, Ignition Type {1}.  DEFAULT NO SUPPRESSION.", SiteVars.AccidentalSuppressionIndex[site], this.IgnitionType.ToString());
@@ -572,11 +591,24 @@ namespace Landis.Extension.Scrapple
             double spreadB2 = PlugIn.Parameters.SpreadProbabilityB2;
             double spreadB3 = PlugIn.Parameters.SpreadProbabilityB3;
 
+            //[JS]  Canopy fire spread probability. For now, I'm letting the max fuel effect (1.0 x B2) be the same for 'ground' and crown fires.
+            if( SiteVars.CrownFire[sourceSite] )
+            {
+
+               double Pspread_canopy = Math.Pow(Math.E, -1.0 * (spreadB0 + (spreadB1 * fireWeatherIndex) + (spreadB2 * treeFuelProp) + (spreadB3 * effectiveWindSpeed)));
+               Pspread_canopy = 1.0 / (1.0 + Pspread_canopy);
+               Pspread_canopy *= distanceWeight;
+               double Pspread_canopy_adjusted = Pspread_canopy * suppressEffect;
+               if (Pspread_canopy_adjusted > PlugIn.ModelCore.GenerateUniform())
+                   SiteVars.CrownFire[site] = true;
+                   spread = true; // Fire will spread regardless of groundfire spread
+            }
+
             double Pspread = Math.Pow(Math.E, -1.0 * (spreadB0 + (spreadB1 * fireWeatherIndex) + (spreadB2 * fineFuelPercent) + (spreadB3 * effectiveWindSpeed)));
             Pspread = 1.0 / (1.0 + Pspread);
-            
-            //The distance weight accounts for the longer centroid distance between diagonal spread 
-            // as compared to cardinal spread.  This is intended to correct the 'square effect' when Pspread is relatively uniform. 
+
+            //The distance weight accounts for the longer centroid distance between diagonal spread
+            // as compared to cardinal spread.  This is intended to correct the 'square effect' when Pspread is relatively uniform.
             Pspread *= distanceWeight;
 
             if (this.IgnitionType == IgnitionType.Rx)
@@ -642,7 +674,7 @@ namespace Landis.Extension.Scrapple
         {
             //PlugIn.ModelCore.UI.WriteLine("  Calculate Damage: {0}.", site);
             int previousCohortsKilled = this.CohortsKilled;
-            SiteVars.Cohorts[site].ReduceOrKillBiomassCohorts(this); 
+            SiteVars.Cohorts[site].ReduceOrKillBiomassCohorts(this);
             return this.CohortsKilled - previousCohortsKilled;
         }
 
