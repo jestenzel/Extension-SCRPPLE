@@ -314,6 +314,10 @@ namespace Landis.Extension.Scrapple
             ReadVar(maxFF);
             parameters.MaxFineFuels = maxFF.Value;
 
+            InputVar<int> maxLF = new InputVar<int>("MaximumLadderFuels");
+            ReadVar(maxLF);
+            parameters.MaxLadderFuels = maxLF.Value;
+
             InputVar<double> maxRxWS = new InputVar<double>("MaximumRxWindSpeed");
             ReadVar(maxRxWS);
             parameters.RxMaxWindSpeed = maxRxWS.Value;
@@ -400,6 +404,10 @@ namespace Landis.Extension.Scrapple
             ReadVar(sp3);
             parameters.SpreadProbabilityB3 = sp3.Value;
 
+            InputVar<string> mortLink = new InputVar<string>("SiteMortalityLink");
+            ReadVar(mortLink);
+            parameters.SiteMortalityLink = mortLink.Value;
+
             InputVar<double> sm0 = new InputVar<double>("SiteMortalityB0");
             ReadVar(sm0);
             parameters.SiteMortalityB0 = sm0.Value;
@@ -427,6 +435,10 @@ namespace Landis.Extension.Scrapple
             InputVar<double> sm6 = new InputVar<double>("SiteMortalityB6");
             ReadVar(sm6);
             parameters.SiteMortalityB6 = sm6.Value;
+
+            InputVar<double> sm7 = new InputVar<double>("SiteMortalityB7");
+            ReadVar(sm7);
+            parameters.SiteMortalityB7 = sm7.Value;
 
             InputVar<double> cm0 = new InputVar<double>("CohortMortalityB0");
             ReadVar(cm0);

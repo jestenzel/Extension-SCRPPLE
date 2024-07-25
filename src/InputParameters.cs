@@ -33,6 +33,7 @@ namespace Landis.Extension.Scrapple
         double AccidentalFireIgnitionBinomialB0 { get; set; }
         double AccidentalFireIgnitionBinomialB1 { get; set; }
         double MaxFineFuels { get; set; }
+        int MaxLadderFuels { get; set; }
         List<IDynamicIgnitionMap> DynamicRxIgnitionMaps { get; }
         List<IDynamicIgnitionMap> DynamicLightningIgnitionMaps { get; }
         List<IDynamicIgnitionMap> DynamicAccidentalIgnitionMaps { get; }
@@ -60,6 +61,7 @@ namespace Landis.Extension.Scrapple
         double SpreadProbabilityB2 { get; set; }
         double SpreadProbabilityB3 { get; set; }
 
+        string SiteMortalityLink { get; set; }
         double SiteMortalityB0 { get; set; }
         double SiteMortalityB1 { get; set; }
         double SiteMortalityB2 { get; set; }
@@ -67,6 +69,7 @@ namespace Landis.Extension.Scrapple
         double SiteMortalityB4 { get; set; }
         double SiteMortalityB5 { get; set; }
         double SiteMortalityB6 { get; set; }
+        double SiteMortalityB7 { get; set; }
         double CohortMortalityB0 { get; set; }
         double CohortMortalityB1 { get; set; }
         double CohortMortalityB2 { get; set; }
@@ -119,6 +122,7 @@ namespace Landis.Extension.Scrapple
         private double accidentalFireIgnitionBinomialB0;
         private double accidentalFireIgnitionBinomialB1;
         private double maxFineFuels;
+        private int maxLadderFuels;
 
         private double maxRxWindSpeed;
         private double maxRxFireWeatherIndex;
@@ -142,6 +146,7 @@ namespace Landis.Extension.Scrapple
         private double spreadProbabilityB2;
         private double spreadProbabilityB3;
 
+        private string siteMortalityLink;
         private double siteMortalityB0;
         private double siteMortalityB1;
         private double siteMortalityB2;
@@ -149,6 +154,7 @@ namespace Landis.Extension.Scrapple
         private double siteMortalityB4;
         private double siteMortalityB5;
         private double siteMortalityB6;
+        private double siteMortalityB7;
 
         private double cohortMortalityB0;
         private double cohortMortalityB1;
@@ -163,6 +169,7 @@ namespace Landis.Extension.Scrapple
 
         private double timeZeroPET;
         private double timeZeroCWD;
+
 
 
 
@@ -439,6 +446,18 @@ namespace Landis.Extension.Scrapple
             }
         }
         //---------------------------------------------------------------------
+        public int MaxLadderFuels
+        {
+            get
+            {
+                return maxLadderFuels;
+            }
+            set
+            {
+                maxLadderFuels = value;
+            }
+        }
+        //---------------------------------------------------------------------
         public double RxMaxWindSpeed
         {
             get
@@ -668,6 +687,12 @@ namespace Landis.Extension.Scrapple
             }
         }
         //---------------------------------------------------------------------
+        public string SiteMortalityLink
+        {
+            get { return siteMortalityLink;}
+            set { siteMortalityLink = value;}
+        }
+//---------------------------------------------------------------------
         public double SiteMortalityB0
         {
             get { return siteMortalityB0;}
@@ -731,6 +756,18 @@ namespace Landis.Extension.Scrapple
             set
             {
                 siteMortalityB6 = value;
+            }
+        }
+        //---------------------------------------------------------------------
+        public double SiteMortalityB7
+        {
+            get
+            {
+                return siteMortalityB7;
+            }
+            set
+            {
+                siteMortalityB7 = value;
             }
         }
         //---------------------------------------------------------------------

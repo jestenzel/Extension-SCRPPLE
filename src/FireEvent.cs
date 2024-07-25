@@ -288,11 +288,9 @@ namespace Landis.Extension.Scrapple
             }
 
             // LADDER FUELS ************************
-            double ladderFuelBiomass = 0.0;
-            foreach (ISpeciesCohorts speciesCohorts in SiteVars.Cohorts[site])
-                foreach (ICohort cohort in speciesCohorts)
-                    if (PlugIn.Parameters.LadderFuelSpeciesList.Contains(cohort.Species) && cohort.Age <= PlugIn.Parameters.LadderFuelMaxAge)
-                        ladderFuelBiomass += cohort.Biomass;
+            int ladderFuelBiomass = SiteVars.LadderFuels[site];
+
+
             // End LADDER FUELS ************************
 
             // dNBR / DRdNBR calculation SITE scale
@@ -340,14 +338,45 @@ namespace Landis.Extension.Scrapple
             double Beta_Water_Deficit = PlugIn.Parameters.SiteMortalityB4;//The parameter fit for site level PET-AET
             double Beta_Fuel = PlugIn.Parameters.SiteMortalityB5; //The parameter fit for site level fuels, here combining fine fuels and ladder fuels
             double Beta_LadderFuels = PlugIn.Parameters.SiteMortalityB6;
+            double Beta_FWI = PlugIn.Parameters.SiteMortalityB7;
 
-            double siteMortality = Math.Pow(Math.Max((intercept + (Clay * Beta_Clay)
-                + (Previous_Year_PET * Beta_ET)
-                + (siteEffectiveWindSpeed * Beta_Windspeed)
-                + (WaterDeficit * Beta_Water_Deficit)
-                + (ladderFuelBiomass * Beta_LadderFuels)
-                + (fineFuelPercent * Beta_Fuel)), .0005), -1.0);
+            double siteMortality = 0.0;
 
+            if (PlugIn.Parameters.SiteMortalityLink == "identity")
+            {
+
+                siteMortality = Math.Min((intercept + (Clay * Beta_Clay) //For Gaussian error distribution
+                    + (Previous_Year_PET * Beta_ET)
+                    + (siteEffectiveWindSpeed * Beta_Windspeed)
+                    + (WaterDeficit * Beta_Water_Deficit)
+                    + (ladderFuelBiomass * Beta_LadderFuels)
+                    + (fineFuelPercent * Beta_Fuel)
+                    + (siteFireWeatherIndex * Beta_FWI)), 2000);
+            }
+            else if (PlugIn.Parameters.SiteMortalityLink == "inverse") //Inverse link is the canonical link for Gamma error distribution
+            { 
+                siteMortality = Math.Pow(Math.Max((intercept + (Clay * Beta_Clay)
+                    + (Previous_Year_PET * Beta_ET)
+                    + (siteEffectiveWindSpeed * Beta_Windspeed)
+                    + (WaterDeficit * Beta_Water_Deficit)
+                    + (ladderFuelBiomass * Beta_LadderFuels)
+                    + (fineFuelPercent * Beta_Fuel)
+                    + (siteFireWeatherIndex * Beta_FWI)), .0005), -1.0);
+            }
+            else if (PlugIn.Parameters.SiteMortalityLink == "log") //Log-link, could be used with Gaussian or Gamma error distribution
+            {
+                siteMortality = Math.Min(Math.Pow(Math.E, intercept + (Clay * Beta_Clay)
+                    + (Previous_Year_PET * Beta_ET)
+                    + (siteEffectiveWindSpeed * Beta_Windspeed)
+                    + (WaterDeficit * Beta_Water_Deficit)
+                    + (ladderFuelBiomass * Beta_LadderFuels)
+                    + (fineFuelPercent * Beta_Fuel)
+                    + (siteFireWeatherIndex * Beta_FWI)), 2000);
+            }
+            else
+            {
+                throw new ApplicationException("SiteMortalityLink must be \"identity\", \"log\", or \"inverse\"");
+            }
             siteMortality = Math.Max(siteMortality, 0.0);  // In the long-run, this shouldn't be necessary.  But useful for testing.
 
             int siteCohortsKilled = 0;

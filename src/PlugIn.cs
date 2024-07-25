@@ -4,6 +4,7 @@ using Landis.SpatialModeling;
 using Landis.Library.Climate;
 using Landis.Core;
 using Landis.Library.Metadata;
+using Landis.Library.BiomassCohorts;
 using Ether.WeightedSelector;  
 
 using System;
@@ -179,6 +180,22 @@ namespace Landis.Extension.Scrapple
             SiteVars.SpecialDeadWood.ActiveSiteValues = 0;
             SiteVars.BiomassKilled.ActiveSiteValues = 0;
             SiteVars.EventID.ActiveSiteValues = 0;
+
+            foreach (ActiveSite site in PlugIn.ModelCore.Landscape)
+            {
+                foreach (ISpeciesCohorts speciesCohorts in SiteVars.Cohorts[site])
+                {
+                    foreach (ICohort cohort in speciesCohorts)
+                    {
+                        if (PlugIn.Parameters.LadderFuelSpeciesList.Contains(cohort.Species) && cohort.Age <= PlugIn.Parameters.LadderFuelMaxAge)
+                        {
+                            SiteVars.LadderFuels[site] += cohort.Biomass;
+                        }
+                    }
+                }
+
+                if (SiteVars.LadderFuels[site] > Parameters.MaxLadderFuels) SiteVars.LadderFuels[site] = Parameters.MaxLadderFuels;
+            }
 
             foreach (IDynamicIgnitionMap dynamicRxIgnitions in dynamicRxIgns)
             {
@@ -696,6 +713,25 @@ namespace Landis.Extension.Scrapple
                         }
                         else
                             pixel.MapCode.Value = 0;
+                    }
+                    else
+                    {
+                        //  Inactive site
+                        pixel.MapCode.Value = 0;
+                    }
+                    outputRaster.WriteBufferPixel();
+                }
+            }
+            string[] paths11 = { "social-climate-fire", "ladder-fuels-{timestep}.img" };
+            path = MapNames.ReplaceTemplateVars(Path.Combine(paths11), currentTime);
+            using (IOutputRaster<IntPixel> outputRaster = modelCore.CreateRaster<IntPixel>(path, modelCore.Landscape.Dimensions))
+            {
+                IntPixel pixel = outputRaster.BufferPixel;
+                foreach (Site site in PlugIn.ModelCore.Landscape.AllSites)
+                {
+                    if (site.IsActive)
+                    {
+                        pixel.MapCode.Value = (int)SiteVars.LadderFuels[site];
                     }
                     else
                     {
